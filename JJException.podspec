@@ -115,7 +115,6 @@ Pod::Spec.new do |s|
 
   s.subspec 'Main' do |spec|
     spec.requires_arc = true
-    spec.public_header_files = "JJException/Source/Main/JJException.h"
     spec.source_files  = "JJException/Source/Main/*.{h,m}"
   end
 
