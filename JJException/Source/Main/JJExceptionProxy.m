@@ -98,31 +98,36 @@ uintptr_t get_slide_address(void) {
     if (!exceptionMessage) {
         return;
     }
-    
-    NSArray* callStack = [NSThread callStackSymbols];
-    NSString* callStackString = [NSString stringWithFormat:@"%@",callStack];
-    
-    uintptr_t loadAddress =  get_load_address();
-    uintptr_t slideAddress =  get_slide_address();
-    
-    NSString* exceptionResult = [NSString stringWithFormat:@"%ld\n%ld\n%@\n%@",loadAddress,slideAddress,exceptionMessage,callStackString];
-    
-    
-    if ([self.delegate respondsToSelector:@selector(handleCrashException:extraInfo:)]){
-        [self.delegate handleCrashException:exceptionResult extraInfo:info];
+    if(self.delegate){
+        NSArray* callStack = [NSThread callStackSymbols];
+        NSString* callStackString = [NSString stringWithFormat:@"%@",callStack];
+        
+        uintptr_t loadAddress =  get_load_address();
+        uintptr_t slideAddress =  get_slide_address();
+        
+        NSString* exceptionResult = [NSString stringWithFormat:@"%ld\n%ld\n%@\n%@",loadAddress,slideAddress,exceptionMessage,callStackString];
+        
+        
+        if ([self.delegate respondsToSelector:@selector(handleCrashException:extraInfo:)]){
+            [self.delegate handleCrashException:exceptionResult extraInfo:info];
+        }
+        
+        if ([self.delegate respondsToSelector:@selector(handleCrashException:exceptionCategory:extraInfo:)]) {
+            [self.delegate handleCrashException:exceptionResult exceptionCategory:exceptionCategory extraInfo:info];
+        }
+        
+#ifdef DEBUG
+        NSLog(@"================================JJException Start==================================");
+        NSLog(@"JJException Type:%ld",(long)exceptionCategory);
+        NSLog(@"JJException Description:%@",exceptionMessage);
+        NSLog(@"JJException Extra info:%@",info);
+        NSLog(@"JJException CallStack:%@",callStack);
+        NSLog(@"================================JJException End====================================");
+#endif
     }
     
-    if ([self.delegate respondsToSelector:@selector(handleCrashException:exceptionCategory:extraInfo:)]) {
-        [self.delegate handleCrashException:exceptionResult exceptionCategory:exceptionCategory extraInfo:info];
-    }
     
 #ifdef DEBUG
-    NSLog(@"================================JJException Start==================================");
-    NSLog(@"JJException Type:%ld",(long)exceptionCategory);
-    NSLog(@"JJException Description:%@",exceptionMessage);
-    NSLog(@"JJException Extra info:%@",info);
-    NSLog(@"JJException CallStack:%@",callStack);
-    NSLog(@"================================JJException End====================================");
     if (self.exceptionWhenTerminate) {
         NSAssert(NO, @"");
     }
